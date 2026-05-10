@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CampusConnect.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#070E2B</item>
+        <item name="windowSplashScreenAnimationDuration">200</item>
+        <item name="postSplashScreenTheme">@style/Theme.CampusConnect</item>
+    </style>
+    <style name="Theme.CampusConnect" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

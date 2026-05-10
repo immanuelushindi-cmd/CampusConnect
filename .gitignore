@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+
+# Local config (DO NOT COMMIT)
+local.properties
+
+# IDE (Android Studio)
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated / Native
+captures/
+.externalNativeBuild/
+.cxx/

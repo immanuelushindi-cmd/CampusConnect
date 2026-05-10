@@ -1,0 +1,10 @@
+# Force Kotlin as the primary language
+*.kt linguist-language=Kotlin
+
+# Treat XML correctly (Android resources)
+*.xml linguist-language=XML
+
+# Ignore generated and build files from language stats
+build/** linguist-vendored
+.gradle/** linguist-vendored
+.idea/** linguist-vendored

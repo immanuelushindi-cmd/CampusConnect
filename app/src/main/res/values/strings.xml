@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Campus Connect</string>
+    <string name="channel_urgent">Urgent Notices</string>
+    <string name="channel_timetable">Timetable Updates</string>
+    <string name="channel_events">Events</string>
+    <string name="channel_general">General</string>
+</resources>
