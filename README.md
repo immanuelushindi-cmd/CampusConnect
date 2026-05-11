@@ -1,4 +1,8 @@
-# 🎓 Campus Connect — v2.0.0
+<p align="center">
+  <img src="app/src/main/res/drawable/cc_logo.png" width="120" alt="Campus Connect Logo"/>
+</p>
+
+# Campus Connect — v2.0.0
 
 > A production-grade Android campus hub built with Jetpack Compose, Firebase, and Clean Architecture.
 
@@ -84,7 +88,8 @@ Campus Connect replaces scattered WhatsApp groups, physical notice boards, and c
 | Remote | Firebase Firestore (realtime), Auth, FCM, Storage, Analytics, Crashlytics |
 | Google Sign-In | androidx.credentials 1.5.0 + google-identity 1.1.1 (Credential Manager API) |
 | Image loading | Coil 2.6.0 + Lottie 6.4.0 |
-| Image hosting | Cloudinary (via Retrofit 2.11.0 / OkHttp) |
+| Image hosting | Cloudinary — uploaded via Retrofit 2.11.0 + OkHttp 4.12.0 multipart POST |
+| Splash screen | androidx.core:core-splashscreen 1.0.1 |
 | Theme persistence | DataStore Preferences 1.1.1 |
 | Permissions | Accompanist Permissions 0.34.0 |
 | Testing | Mockito + kotlinx-coroutines-test (StandardTestDispatcher) |
@@ -101,6 +106,7 @@ Campus Connect replaces scattered WhatsApp groups, physical notice boards, and c
 | JDK | 17+ |
 | Android SDK | API 35 |
 | Firebase Account | Free Spark plan works |
+| Cloudinary Account | Free plan works |
 
 ### Step 1 — Clone & Open
 
@@ -131,7 +137,31 @@ GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID_HERE
 
 > ⚠️ `local.properties` is git-ignored. Never commit it. The build will error if this key is missing.
 
-### Step 3 — Deploy Firebase Rules & Seed Data (optional)
+### Step 3 — Cloudinary Setup (~3 minutes)
+
+Image uploads (notice images, profile photos) go through Cloudinary using an **unsigned upload preset**.
+
+1. Sign up at [cloudinary.com](https://cloudinary.com) (free plan is sufficient)
+2. From your dashboard note your **Cloud name**
+3. Go to **Settings → Upload → Upload presets** → click **Add upload preset**
+   - Set **Signing mode** to **Unsigned**
+   - Give it a name (e.g. `CampusConnect`)
+4. Open `app/src/main/java/com/campusconnect/app/data/remote/CloudinaryApi.kt` and replace the cloud name in the POST path:
+
+```text
+@POST("v1_1/YOUR_CLOUD_NAME/image/upload")
+```
+
+5. Open `CloudinaryService.kt` and replace the upload preset string:
+
+```text
+val uploadPreset = "YOUR_PRESET_NAME"
+    .toRequestBody("text/plain".toMediaTypeOrNull())
+```
+
+> ⚠️ Do not hardcode production credentials in version control. Consider moving these values to `local.properties` and reading them via `BuildConfig` fields (same pattern used for `GOOGLE_WEB_CLIENT_ID`).
+
+### Step 4 — Deploy Firebase Rules & Seed Data (optional)
 
 ```bash
 npm install -g firebase-tools
@@ -140,7 +170,7 @@ chmod +x scripts/firebase_deploy.sh
 ./scripts/firebase_deploy.sh YOUR_PROJECT_ID
 ```
 
-### Step 4 — Build & Run
+### Step 5 — Build & Run
 
 ```bash
 ./gradlew assembleDebug
@@ -165,8 +195,8 @@ app/src/main/java/com/campusconnect/app/
 │   │   └── entity/Entities.kt       # NoticeEntity, TimetableEntity, EventEntity
 │   ├── remote/
 │   │   ├── FirebaseService.kt       # Firestore + FCM + Auth integration
-│   │   ├── CloudinaryService.kt     # Image upload via Retrofit
-│   │   ├── CloudinaryApi.kt
+│   │   ├── CloudinaryService.kt     # Image upload via Retrofit multipart POST
+│   │   ├── CloudinaryApi.kt         # Retrofit interface — update cloud name here
 │   │   └── CloudinaryResponse.kt
 │   └── repository/Repositories.kt  # AuthRepo, NoticeRepo, TimetableRepo,
 │                                    # EventRepo, CourseRepo, LecturerRepo
@@ -320,3 +350,13 @@ Six unit tests in `NoticesViewModelTest.kt` covering:
 | ✅ `targetYearOfStudy` fix | Field now included in the Firestore map when posting a notice |
 | ✅ Build artifacts removed | `app/build/` removed from Git tracking |
 | ✅ Unit tests fixed | Constructor signature, category names, and priority values aligned with actual code |
+
+---
+
+## 🧹 Known Housekeeping
+
+| Item | Detail |
+|---|---|
+| ⚠️ Unused dependency | `com.cloudinary:cloudinary-android:2.3.1` is declared in `build.gradle.kts` but never imported or used — image uploads go through the Retrofit `CloudinaryApi` instead. Safe to remove. |
+| ⚠️ Unused dependency | `work-runtime-ktx` and `hilt-work` are declared but no `Worker` subclass exists in the codebase. Safe to remove unless WorkManager support is planned. |
+| ⚠️ Cloudinary credentials in source | The cloud name and upload preset are currently hardcoded in `CloudinaryApi.kt` and `CloudinaryService.kt`. Move them to `local.properties` + `BuildConfig` to keep them out of version control. |
