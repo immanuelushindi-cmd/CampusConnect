@@ -225,14 +225,25 @@ class FirebaseService @Inject constructor(
 
     suspend fun rsvpEvent(eventId: String, userId: String, attending: Boolean): Result<Unit> =
         runCatching {
-            val delta = if (attending) 1L else -1L
-            firestore.runBatch { batch ->
-                batch.update(eventsCol.document(eventId), "rsvpCount", FieldValue.increment(delta))
-                if (attending) {
-                    batch.update(usersCol.document(userId), "rsvpEvents", FieldValue.arrayUnion(eventId))
-                } else {
-                    batch.update(usersCol.document(userId), "rsvpEvents", FieldValue.arrayRemove(eventId))
+            // Un-RSVP is disabled: once a user RSVPs they cannot withdraw.
+            if (!attending) return@runCatching
+
+            firestore.runTransaction { tx ->
+                val userRef  = usersCol.document(userId)
+                val eventRef = eventsCol.document(eventId)
+
+                // Read the user document inside the transaction to check for an existing RSVP.
+                val userSnap = tx.get(userRef)
+                @Suppress("UNCHECKED_CAST")
+                val alreadyRsvpd = (userSnap["rsvpEvents"] as? List<String>)
+                    ?.contains(eventId) == true
+                if (alreadyRsvpd) {
+                    throw IllegalStateException("You have already RSVP'd to this event.")
                 }
+
+                // Safe to proceed — record the RSVP atomically.
+                tx.update(eventRef, "rsvpCount", FieldValue.increment(1L))
+                tx.update(userRef,  "rsvpEvents", FieldValue.arrayUnion(eventId))
             }.await()
         }
 

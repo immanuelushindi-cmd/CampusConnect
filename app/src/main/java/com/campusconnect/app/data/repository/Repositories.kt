@@ -304,11 +304,18 @@ class EventRepository @Inject constructor(
     }
 
     suspend fun rsvp(eventId: String, attending: Boolean) {
-        val delta = if (attending) 1 else -1
-        dao.updateRsvp(eventId, attending, delta)
+        // One-way RSVP only: users cannot withdraw once they have committed.
+        if (!attending) return
+
+        // Optimistic local update.
+        dao.updateRsvp(eventId, true, 1)
         val uid = firebase.currentUid ?: return
-        firebase.rsvpEvent(eventId, uid, attending)
-            .onFailure { dao.updateRsvp(eventId, !attending, -delta) }
+        firebase.rsvpEvent(eventId, uid, true)
+            .onFailure {
+                // Roll back the optimistic update if the server rejects the RSVP
+                // (e.g. the user had already RSVP'd in another session).
+                dao.updateRsvp(eventId, false, -1)
+            }
     }
 
     suspend fun clearLocalData() = dao.clearAll()

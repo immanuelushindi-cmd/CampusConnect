@@ -195,8 +195,11 @@ fun EventsScreen(
                             EventCard(
                                 event      = event,
                                 onRsvp     = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    vm.toggleRsvp(event.id, !event.isAttending)
+                                    // RSVP is one-way: only fire when the user has not yet attended.
+                                    if (!event.isAttending) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        vm.toggleRsvp(event.id, true)
+                                    }
                                 },
                                 onMapClick = {
                                     if (event.latitude != null && event.longitude != null) {
@@ -438,9 +441,10 @@ private fun EventCard(
 
                     Spacer(Modifier.width(12.dp))
 
-                    // RSVP button
+                    // RSVP button — disabled once the user has already RSVP'd
                     Button(
                         onClick        = onRsvp,
+                        enabled        = !event.isAttending,
                         colors         = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         contentPadding = PaddingValues(0.dp),
                         shape          = RoundedCornerShape(14.dp)

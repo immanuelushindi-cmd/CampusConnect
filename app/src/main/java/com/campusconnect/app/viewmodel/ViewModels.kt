@@ -448,8 +448,8 @@ class EventsViewModel @Inject constructor(
         if (q.isBlank()) list
         else list.filter { e ->
             e.title.contains(q, ignoreCase = true) ||
-            e.description.contains(q, ignoreCase = true) ||
-            e.location.contains(q, ignoreCase = true)
+                    e.description.contains(q, ignoreCase = true) ||
+                    e.location.contains(q, ignoreCase = true)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
@@ -468,7 +468,9 @@ class EventsViewModel @Inject constructor(
     }
 
     fun toggleRsvp(eventId: String, attending: Boolean) {
-        viewModelScope.launch { repo.rsvp(eventId, attending) }
+        // Un-RSVP is not permitted; silently ignore any attempt to un-attend.
+        if (!attending) return
+        viewModelScope.launch { repo.rsvp(eventId, true) }
     }
 }
 
