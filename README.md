@@ -121,11 +121,11 @@ cd CampusConnect
 1. Go to [Firebase Console](https://console.firebase.google.com) → **Create Project**
 2. **Add Android app** — package name: `com.campusconnect.app`
 3. Enable the following services:
-   - **Authentication** → Email/Password **and** Google
-   - **Firestore Database** → Start in test mode
-   - **Cloud Messaging** (enabled by default)
-   - **Storage** → Start in test mode
-   - **Analytics** and **Crashlytics** (optional but recommended)
+    - **Authentication** → Email/Password **and** Google
+    - **Firestore Database** → Start in test mode
+    - **Cloud Messaging** (enabled by default)
+    - **Storage** → Start in test mode
+    - **Analytics** and **Crashlytics** (optional but recommended)
 4. Download **`google-services.json`** → place it inside `app/`
 5. Copy your **Web client ID** from:
    `Firebase Console → Authentication → Sign-in method → Google → Web SDK configuration`
@@ -144,9 +144,9 @@ Image uploads (notice images, profile photos) go through Cloudinary using an **u
 1. Sign up at [cloudinary.com](https://cloudinary.com) (free plan is sufficient)
 2. From your dashboard note your **Cloud name**
 3. Go to **Settings → Upload → Upload presets** → click **Add upload preset**
-   - Set **Signing mode** to **Unsigned**
-   - Give it a name (e.g. `CampusConnect`)
-4. Open `app/src/main/java/com/campusconnect/app/data/remote/CloudinaryApi.kt` and replace the cloud name in the POST path:
+    - Set **Signing mode** to **Unsigned**
+    - Give it a name (e.g. `CampusConnect`)
+4. Open `app/src/main/java/com/campusconnect/app/network/CloudinaryApi.kt` and replace the cloud name in the POST path:
 
 ```text
 @POST("v1_1/YOUR_CLOUD_NAME/image/upload")
@@ -188,27 +188,41 @@ app/src/main/java/com/campusconnect/app/
 ├── CampusConnectApp.kt              # Application class + FCM notification channels
 ├── MainActivity.kt                  # Entry point + bottom navigation host
 │
-├── data/
+├── data/                            # ViewModels + local persistence + repositories
+│   ├── AuthViewModel.kt             # Sign-in, sign-up, Google, forgot password
+│   ├── ProfileViewModel.kt          # Profile edits, photo upload, notification toggle
+│   ├── DashboardViewModel.kt        # Recent notices, upcoming events, next class
+│   ├── NoticesViewModel.kt          # Search, filter, save, pull-to-refresh
+│   ├── NoticeDetailViewModel.kt     # Single notice view + save toggle
+│   ├── EventsViewModel.kt           # Event list, search, RSVP
+│   ├── TimetableViewModel.kt        # Day-strip, per-course filtering
+│   ├── AdminViewModel.kt            # Post/edit/delete notices, events, timetable
+│   ├── CourseManagementViewModel.kt # CRUD for CourseEntry + LecturerEntry
+│   ├── AdminDashboardViewModel.kt   # Live stats: notice, event, user counts
 │   ├── local/
-│   │   ├── dao/Daos.kt              # Room DAOs: NoticeDao, TimetableDao, EventDao
+│   │   ├── dao/Daos.kt              # NoticeDao, TimetableDao, EventDao
 │   │   ├── database/CampusDatabase.kt
 │   │   └── entity/Entities.kt       # NoticeEntity, TimetableEntity, EventEntity
-│   ├── remote/
-│   │   ├── FirebaseService.kt       # Firestore + FCM + Auth integration
-│   │   ├── CloudinaryService.kt     # Image upload via Retrofit multipart POST
-│   │   ├── CloudinaryApi.kt         # Retrofit interface — update cloud name here
-│   │   └── CloudinaryResponse.kt
 │   └── repository/Repositories.kt  # AuthRepo, NoticeRepo, TimetableRepo,
 │                                    # EventRepo, CourseRepo, LecturerRepo
 │
-├── domain/
-│   ├── model/
-│   │   ├── DomainModels.kt          # Notice, Event, TimetableEntry, User,
-│   │   │                            # CourseEntry, LecturerEntry,
-│   │   │                            # NoticeCategory, NoticePriority
-│   │   └── NoticeExtensions.kt
-│   └── usecase/UseCases.kt          # GetNoticesUseCase, SearchNoticesUseCase,
-│                                    # GetSavedNoticesUseCase, GetNoticesByCategoryUseCase
+├── models/                          # Domain models, use cases, state wrappers, mappers
+│   ├── DomainModels.kt              # Notice, Event, TimetableEntry, User,
+│   │                                # CourseEntry, LecturerEntry,
+│   │                                # NoticeCategory, NoticePriority
+│   ├── NoticeExtensions.kt
+│   ├── UseCases.kt                  # GetNoticesUseCase, SearchNoticesUseCase,
+│   │                                # GetSavedNoticesUseCase, GetNoticesByCategoryUseCase
+│   ├── UiState.kt                   # UiState<T> (Idle/Loading/Success/Error)
+│   │                                # + SyncState (Idle/Loading/Success/Error)
+│   ├── DateFormatters.kt            # Centralised java.time formatters (API 26+)
+│   └── Mappers.kt                   # Entity ↔ Domain ↔ Firestore map functions
+│
+├── network/                         # Remote data sources
+│   ├── FirebaseService.kt           # Firestore + Auth + FCM integration
+│   ├── CloudinaryApi.kt             # Retrofit interface — update cloud name here
+│   ├── CloudinaryService.kt         # Multipart image upload via OkHttp
+│   └── CloudinaryResponse.kt
 │
 ├── di/Modules.kt                    # Hilt DI bindings
 │
@@ -218,51 +232,43 @@ app/src/main/java/com/campusconnect/app/
 │
 ├── service/CampusFCMService.kt      # FCM message handler (4 channels)
 │
-├── ui/
-│   ├── components/Components.kt     # GlassCard, NoticeCard, ShimmerBox,
-│   │                                # EmptyState, SyncErrorBanner,
-│   │                                # CampusBottomBar, PulseDot, CampusLoadingIndicator
-│   ├── screens/
-│   │   ├── auth/
-│   │   │   ├── LoginScreen.kt       # Username + password login; Google (Credential Manager);
-│   │   │   │                        # Forgot Password dialog with email reset
-│   │   │   └── RegisterScreen.kt    # Username, email (format-validated), password, name;
-│   │   │                            # Google Sign-Up (Credential Manager)
-│   │   ├── dashboard/DashboardScreen.kt    # Recent notices, upcoming events, next class,
-│   │   │                                   # stats strip; "Admin Panel" FAB for admins
-│   │   ├── notices/
-│   │   │   ├── NoticesScreen.kt     # Search bar, category chips, saved filter, pull-to-refresh
-│   │   │   └── NoticeDetailScreen.kt
-│   │   ├── timetable/TimetableScreen.kt
-│   │   ├── events/EventsScreen.kt   # Real-time search bar, month-grouped list, RSVP
-│   │   ├── profile/ProfileScreen.kt # Photo upload (with loading spinner), edit profile,
-│   │   │                            # notification toggle, sign-out
-│   │   ├── admin/
-│   │   │   ├── AdminScreen.kt              # Admin hub / entry point
-│   │   │   ├── AdminDashboardScreen.kt     # Live stats: notice count, event count, user count
-│   │   │   ├── AdminNoticesScreen.kt       # List + delete with confirmation dialog
-│   │   │   ├── AdminNoticeShared.kt        # Shared post/edit notice form
-│   │   │   ├── AdminEventsScreen.kt        # List + delete with confirmation dialog
-│   │   │   ├── AdminPostEventScreen.kt     # Post / edit event form
-│   │   │   ├── AdminTimetableScreen.kt     # List + delete with confirmation dialog
-│   │   │   ├── AdminPostTimetableScreen.kt # Post / edit timetable entry form
-│   │   │   ├── AdminCoursesScreen.kt       # CRUD for CourseEntry + LecturerEntry
-│   │   │   └── AdminProfileScreen.kt
-│   │   └── splash/SplashScreen.kt
-│   └── theme/
-│       ├── Color.kt
-│       ├── Theme.kt
-│       ├── Type.kt
-│       ├── ThemePreferences.kt      # DataStore-backed theme preference
-│       └── AppThemeState.kt         # App-wide dark mode StateFlow singleton
-│
-├── utils/
-│   ├── UiState.kt                   # UiState<T> (Idle/Loading/Success/Error)
-│   │                                # + SyncState (Idle/Loading/Success/Error)
-│   ├── DateFormatters.kt            # Centralised java.time formatters (API 26+)
-│   └── mappers/Mappers.kt           # Entity ↔ Domain ↔ Firestore map functions
-│
-└── viewmodel/ViewModels.kt          # All 10 ViewModels in one file
+└── ui/
+    ├── components/Components.kt     # GlassCard, NoticeCard, ShimmerBox,
+    │                                # EmptyState, SyncErrorBanner,
+    │                                # CampusBottomBar, PulseDot, CampusLoadingIndicator
+    ├── screens/
+    │   ├── auth/
+    │   │   ├── LoginScreen.kt       # Username + password login; Google (Credential Manager);
+    │   │   │                        # Forgot Password dialog with email reset
+    │   │   └── RegisterScreen.kt    # Username, email (format-validated), password, name;
+    │   │                            # Google Sign-Up (Credential Manager)
+    │   ├── dashboard/DashboardScreen.kt    # Recent notices, upcoming events, next class,
+    │   │                                   # stats strip; "Admin Panel" FAB for admins
+    │   ├── notices/
+    │   │   ├── NoticesScreen.kt     # Search bar, category chips, saved filter, pull-to-refresh
+    │   │   └── NoticeDetailScreen.kt
+    │   ├── timetable/TimetableScreen.kt
+    │   ├── events/EventsScreen.kt   # Real-time search bar, month-grouped list, RSVP
+    │   ├── profile/ProfileScreen.kt # Photo upload (with loading spinner), edit profile,
+    │   │                            # notification toggle, sign-out
+    │   ├── admin/
+    │   │   ├── AdminScreen.kt              # Admin hub / entry point
+    │   │   ├── AdminDashboardScreen.kt     # Live stats: notice count, event count, user count
+    │   │   ├── AdminNoticesScreen.kt       # List + delete with confirmation dialog
+    │   │   ├── AdminNoticeShared.kt        # Shared post/edit notice form
+    │   │   ├── AdminEventsScreen.kt        # List + delete with confirmation dialog
+    │   │   ├── AdminPostEventScreen.kt     # Post / edit event form
+    │   │   ├── AdminTimetableScreen.kt     # List + delete with confirmation dialog
+    │   │   ├── AdminPostTimetableScreen.kt # Post / edit timetable entry form
+    │   │   ├── AdminCoursesScreen.kt       # CRUD for CourseEntry + LecturerEntry
+    │   │   └── AdminProfileScreen.kt
+    │   └── splash/SplashScreen.kt
+    └── theme/
+        ├── Color.kt
+        ├── Theme.kt
+        ├── Type.kt
+        ├── ThemePreferences.kt      # DataStore-backed theme preference
+        └── AppThemeState.kt         # App-wide dark mode StateFlow singleton
 ```
 
 ---
@@ -286,8 +292,6 @@ Admin access is granted to any user whose Firestore `users/{uid}` document has `
 To create an admin account:
 1. Register normally in the app
 2. In the Firebase Console, open `users/{uid}` and set the `username` field to `"admin"`
-
-> The `ADMIN_DOMAIN_1` / `ADMIN_DOMAIN_2` build config fields in `app/build.gradle.kts` are reserved for future email-domain access control and are **not** currently used for admin detection.
 
 ---
 
@@ -322,41 +326,3 @@ Six unit tests in `NoticesViewModelTest.kt` covering:
 - `setCategory` updates `selectedCategory`
 - Clearing category resets it to `null`
 - `toggleSavedFilter` flips `showSavedOnly`
-
----
-
-## 📦 What Changed in v2.0
-
-| Improvement | Detail |
-|---|---|
-| ✅ Clean Architecture | Domain models separated from Room entities via a mapper layer |
-| ✅ Use Cases | `GetNoticesUseCase`, `SearchNoticesUseCase`, `GetSavedNoticesUseCase`, `GetNoticesByCategoryUseCase` |
-| ✅ `UiState<T>` + `SyncState` | Two unified sealed classes replacing ad-hoc state management |
-| ✅ Notice Detail screen | Dedicated screen with GlassCard layout, tags, priority badge, save toggle |
-| ✅ Skeleton loading | `ShimmerBox` on first load instead of a plain spinner |
-| ✅ `GlassCard` | Press-responsive scale + elevation animation |
-| ✅ Event search | Real-time search bar across title, description, and location |
-| ✅ Saved (not Favourite) | Unified terminology across the whole codebase |
-| ✅ Per-user saved state | Stored in `users/{uid}/savedNotices`; never bleeds between accounts |
-| ✅ Forgot Password | Email reset dialog with proper success/error messages |
-| ✅ Admin Panel FAB | Label changed from "Post Notice" to "Admin Panel"; icon updated |
-| ✅ Email format validation | Register button disabled until email contains `@` and `.` |
-| ✅ Google Sign-In modernised | Migrated from deprecated `GoogleSignInOptions` to Credential Manager API |
-| ✅ Google users get usernames | Auto-generated and stored in the `usernames` Firestore collection |
-| ✅ Username validation | 3–30 chars, letters/digits/underscores/dots — prevents Firestore path injection |
-| ✅ Photo upload feedback | Spinner overlays avatar during Cloudinary upload; controls disabled to prevent double-tap |
-| ✅ Delete confirmations | Confirmation dialog before deleting any notice, event, or timetable entry |
-| ✅ `deleteNotice` race fix | Room deletion only runs after Firestore confirms success |
-| ✅ `targetYearOfStudy` fix | Field now included in the Firestore map when posting a notice |
-| ✅ Build artifacts removed | `app/build/` removed from Git tracking |
-| ✅ Unit tests fixed | Constructor signature, category names, and priority values aligned with actual code |
-
----
-
-## 🧹 Known Housekeeping
-
-| Item | Detail |
-|---|---|
-| ⚠️ Unused dependency | `com.cloudinary:cloudinary-android:2.3.1` is declared in `build.gradle.kts` but never imported or used — image uploads go through the Retrofit `CloudinaryApi` instead. Safe to remove. |
-| ⚠️ Unused dependency | `work-runtime-ktx` and `hilt-work` are declared but no `Worker` subclass exists in the codebase. Safe to remove unless WorkManager support is planned. |
-| ⚠️ Cloudinary credentials in source | The cloud name and upload preset are currently hardcoded in `CloudinaryApi.kt` and `CloudinaryService.kt`. Move them to `local.properties` + `BuildConfig` to keep them out of version control. |
