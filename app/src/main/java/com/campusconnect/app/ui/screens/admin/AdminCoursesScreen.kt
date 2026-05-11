@@ -5,16 +5,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState                    // FIX 3 & 4
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll                         // FIX 3
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset       // FIX 1
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -340,7 +340,7 @@ private fun LecturersTab(
     onDelete    : (LecturerEntry) -> Unit,
     onAddFirst  : () -> Unit
 ) {
-    // Build a quick lookup so cards can show course names, not just codes
+
     val courseMap = remember(courses) { courses.associateBy { it.code } }
 
     val filtered = remember(lecturers, searchQuery) {
@@ -422,7 +422,7 @@ private fun CourseCard(course: CourseEntry, onEdit: () -> Unit, onDelete: () -> 
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class) // FIX 2: opt-in for FlowRow
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LecturerCard(
     lecturer  : LecturerEntry,

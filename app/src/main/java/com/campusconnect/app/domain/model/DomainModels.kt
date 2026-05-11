@@ -93,15 +93,15 @@ data class TimetableEntry(
     val lecturer:         String = "",
     val room:             String = "",
     val building:         String = "",
-    val dayOfWeek:        Int    = 0,      // 0=Mon … 4=Fri
+    val dayOfWeek:        Int    = 0,
     val startHour:        Int    = 8,
     val startMinute:      Int    = 0,
     val endHour:          Int    = 9,
     val endMinute:        Int    = 0,
     val colorHex:         String = "#1E3A5F",
-    val semester:         String = "",     // ← used in Repositories.kt
+    val semester:         String = "",
     val notes:            String = "",
-    val targetDepartment: String = "",      // programme-specific; blank = all
+    val targetDepartment: String = "",
     val targetYearOfStudy: Int?   = null,
 )
 
@@ -130,17 +130,17 @@ data class User(
 
 
 data class CourseEntry(
-    val id:   String = "",   // = document ID = course code
+    val id:   String = "",
     val code: String = "",
     val name: String = ""
 )
 
 //LecturerEntry
 data class LecturerEntry(
-    val id        : String       = "",   // Firestore document ID
-    val name      : String       = "",   // e.g. "Dr. Jane Otieno"
-    val lecturerId: String       = "",   // e.g. "L-2024-007"
-    val courseIds : List<String> = emptyList() // e.g. ["CS101", "CS202"]
+    val id        : String       = "",
+    val name      : String       = "",
+    val lecturerId: String       = "",
+    val courseIds : List<String> = emptyList()
 )
 
 val TARGET_AUDIENCES: List<String> = listOf("All Students")

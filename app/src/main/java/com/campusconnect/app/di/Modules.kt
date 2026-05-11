@@ -55,10 +55,7 @@ object DatabaseModule {
                 CampusDatabase.MIGRATION_1_2,
                 CampusDatabase.MIGRATION_2_3   // FIX: register the new migration
             )
-            // FIX: fallbackToDestructiveMigration() removed for production safety.
-            // With explicit migrations covering every version gap, destructive fallback
-            // is never needed and silently wipes user data if a version is missed.
-            // Re-add ONLY during active development when schema is still unstable.
+
             .build()
 }
 

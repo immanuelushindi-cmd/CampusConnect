@@ -101,9 +101,6 @@ class FirebaseService @Inject constructor(
         noticesCol.document(id).update(updates).await()
     }
 
-    // Only updates the user's savedNotices list — NOT the notice document.
-    // Writing isSaved to the notice document was a bug: it would show a notice
-    // as saved for every user, not just the one who saved it.
     suspend fun toggleSaved(noticeId: String, userId: String, isSaved: Boolean): Result<Unit> =
         runCatching {
             val update = if (isSaved) FieldValue.arrayUnion(noticeId)
@@ -225,14 +222,14 @@ class FirebaseService @Inject constructor(
 
     suspend fun rsvpEvent(eventId: String, userId: String, attending: Boolean): Result<Unit> =
         runCatching {
-            // Un-RSVP is disabled: once a user RSVPs they cannot withdraw.
+
             if (!attending) return@runCatching
 
             firestore.runTransaction { tx ->
                 val userRef  = usersCol.document(userId)
                 val eventRef = eventsCol.document(eventId)
 
-                // Read the user document inside the transaction to check for an existing RSVP.
+
                 val userSnap = tx.get(userRef)
                 @Suppress("UNCHECKED_CAST")
                 val alreadyRsvpd = (userSnap["rsvpEvents"] as? List<String>)
@@ -241,7 +238,7 @@ class FirebaseService @Inject constructor(
                     throw IllegalStateException("You have already RSVP'd to this event.")
                 }
 
-                // Safe to proceed — record the RSVP atomically.
+
                 tx.update(eventRef, "rsvpCount", FieldValue.increment(1L))
                 tx.update(userRef,  "rsvpEvents", FieldValue.arrayUnion(eventId))
             }.await()

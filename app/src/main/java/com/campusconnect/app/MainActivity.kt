@@ -42,9 +42,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // Install and immediately dismiss the system splash screen.
-        // It shows only for the few milliseconds Compose needs to render —
-        // our designed SplashScreen composable takes over right after.
+
         installSplashScreen()
 
         super.onCreate(savedInstanceState)

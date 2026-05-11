@@ -15,26 +15,19 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlin.random.Random
 
-// FIX 3: onNewToken now saves the FCM token to Firestore under the user's document.
-//         Previously this was a TODO comment, meaning push notifications were NEVER
-//         delivered to any device after install or token rotation.
-//         Note: FirebaseAuth and FirebaseFirestore are accessed directly here because
-//         FirebaseMessagingService is not a Hilt entry point. This is the standard
-//         Android pattern for FCM services.
+
 
 class CampusFCMService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        // FIX 3: Persist the token to Firestore so the server can send targeted
-        // push notifications to this specific device.
+
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance()
             .collection("users")
             .document(uid)
             .update("fcmToken", token)
-            // Silently ignore failures (e.g. user just installed, not logged in yet).
-            // The token will be saved on next login via ensureUserDocument() if needed.
+
             .addOnFailureListener { /* no-op: user may not be logged in yet */ }
     }
 

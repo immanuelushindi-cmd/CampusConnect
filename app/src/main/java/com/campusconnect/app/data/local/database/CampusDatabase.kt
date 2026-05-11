@@ -13,7 +13,7 @@ import com.campusconnect.app.data.local.entity.TimetableEntity
 
 @Database(
     entities = [NoticeEntity::class, TimetableEntity::class, EventEntity::class],
-    version = 3,           // FIX: bumped from 2 → 3 to add targeting columns
+    version = 3,
     exportSchema = false
 )
 abstract class CampusDatabase : RoomDatabase() {
@@ -24,9 +24,7 @@ abstract class CampusDatabase : RoomDatabase() {
     companion object {
         const val DATABASE_NAME = "campus_connect_v2.db"
 
-        // ── Migration 1 → 2 ───────────────────────────────────────────────────
-        // notices : timestampMs  → createdAt
-        // events  : hasRsvp      → isAttending  /  endTimestampMs + category removed
+
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("""
@@ -87,23 +85,17 @@ abstract class CampusDatabase : RoomDatabase() {
             }
         }
 
-        // ── Migration 2 → 3 ───────────────────────────────────────────────────
-        // FIX: Add targetDepartment and targetCourse columns to notices and events.
-        // These columns were present in domain models and the Firestore mapper but
-        // missing from the Room entities, meaning targeting was silently lost on
-        // any cached data. SQLite ADD COLUMN is safe here (nullable columns with
-        // no DEFAULT constraint are stored as NULL for existing rows, which is
-        // exactly the right default — no targeting restriction).
+
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // notices
+
                 db.execSQL("ALTER TABLE notices ADD COLUMN targetDepartment TEXT")
                 db.execSQL("ALTER TABLE notices ADD COLUMN targetCourse TEXT")
-                // events
+
                 db.execSQL("ALTER TABLE events ADD COLUMN targetDepartment TEXT")
                 db.execSQL("ALTER TABLE events ADD COLUMN targetCourse TEXT")
-                // timetable — targetDepartment was in the entity but never in the
-                // physical table; semester column also missing on older installs
+
+
                 db.execSQL("ALTER TABLE timetable ADD COLUMN targetDepartment TEXT NOT NULL DEFAULT ''")
                 db.execSQL("ALTER TABLE timetable ADD COLUMN semester TEXT NOT NULL DEFAULT ''")
             }

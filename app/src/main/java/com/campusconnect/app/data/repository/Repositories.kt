@@ -342,8 +342,7 @@ class CourseRepository @Inject constructor(
         firebase.deleteCourse(id)
 }
 
-// ─── Lecturer Repository ──────────────────────────────────────────────────────
-// Mirrors CourseRepository exactly. Firestore collection: `lecturers`.
+// ─── Lecturer Repository ─────────────────────────────────────────────────────
 // One lecturer document can reference multiple course codes via `courseIds`,
 // which is what allows the timetable screen to filter lecturers per course.
 

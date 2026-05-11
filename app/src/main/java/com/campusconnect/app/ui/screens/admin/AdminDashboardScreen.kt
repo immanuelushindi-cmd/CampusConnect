@@ -61,12 +61,10 @@ private sealed interface AdminDialog {
     data class  DeleteEvent(val e: Event)              : AdminDialog
     data object EventSearch                            : AdminDialog
     data object DeleteAllEvents                        : AdminDialog
-    // ── New: search-driven course sheets ─────────────────────────────────────
+
     data object NoticeCourseSearch                     : AdminDialog
     data class  NoticesByCourse(val course: CourseEntry) : AdminDialog
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
@@ -1213,4 +1211,5 @@ private fun ConfirmDeleteDialog(
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
     )
+}
 }

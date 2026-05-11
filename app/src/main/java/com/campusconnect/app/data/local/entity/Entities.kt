@@ -18,12 +18,11 @@ data class NoticeEntity(
     val authorPhotoUrl: String? = null,
     @ColumnInfo(name = "createdAt") val createdAt: Long = 0L,
     val imageUrl: String? = null,
-    val tags: String = "",           // comma-separated
+    val tags: String = "",
     @ColumnInfo(name = "isFavorite") val isSaved: Boolean = false,
     val viewCount: Int = 0,
     val isActive: Boolean = true,
-    // FIX: Added targeting columns — these were in the domain model and Firestore
-    // mapper but missing from the entity, silently breaking all offline targeting.
+
     val targetDepartment: String? = null,
     val targetCourse: String? = null
 )
@@ -46,7 +45,7 @@ data class TimetableEntity(
     val colorHex: String = "#1E3A8A",
     val notes: String = "",
     val semester: String = "",
-    // targetDepartment already existed here — kept as-is
+
     val targetDepartment: String = ""
 )
 
@@ -68,7 +67,7 @@ data class EventEntity(
     @ColumnInfo(name = "isAttending") val isAttending: Boolean = false,
     val isOnline: Boolean = false,
     val meetLink: String? = null,
-    // FIX: Added targeting columns — same issue as NoticeEntity above.
+
     val targetDepartment: String? = null,
     val targetCourse: String? = null
 )

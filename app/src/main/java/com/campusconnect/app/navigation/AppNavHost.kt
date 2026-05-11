@@ -33,9 +33,6 @@ import com.campusconnect.app.ui.screens.splash.SplashScreen
 import com.campusconnect.app.ui.screens.timetable.TimetableScreen
 import com.campusconnect.app.viewmodel.AuthViewModel
 
-// NOTE: All route constants and noticeDetailRoute() are defined in Routes.kt.
-//       Do NOT redeclare them here — duplicate top-level declarations in the
-//       same package cause a compile-time "Redeclaration" error in Kotlin.
 
 // ─── Transition constants ─────────────────────────────────────────────────────
 private const val TRANSITION_DURATION = 300
@@ -51,7 +48,7 @@ private val popEnter  = slideInHorizontally(tween(TRANSITION_DURATION)) { -it / 
 private val popExit   = slideOutHorizontally(tween(TRANSITION_DURATION)) { it / 8 } +
         fadeOut(tween(TRANSITION_DURATION))
 
-// ─── Nav Host ─────────────────────────────────────────────────────────────────
+
 
 @Composable
 fun AppNavHost(

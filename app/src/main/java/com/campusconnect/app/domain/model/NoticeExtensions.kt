@@ -3,10 +3,7 @@ package com.campusconnect.app.domain.model
 import androidx.compose.ui.graphics.Color
 
 // ─── Priority color / label extension properties ───────────────────────────────
-//
-// Previously the `when(notice.priority)` color+label resolution was copy-pasted
-// verbatim in DashboardScreen, AdminNoticesScreen (×2) and AdminDashboardScreen.
-// Centralising them here means a single change propagates everywhere.
+
 
 val NoticePriority.color: Color
     get() = when (this) {
